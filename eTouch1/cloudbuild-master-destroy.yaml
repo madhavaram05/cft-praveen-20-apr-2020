@@ -1,0 +1,35 @@
+# This build can be used deploy all modules sequentially as given below in MODULE_SEQUENCE 
+# Usage : In this directory, run the following command to build
+# $ gcloud builds submit . --config=cloudbuild-master-destroy.yaml
+steps:
+- id: 'module_builder'
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: "bash"
+  args:
+    - '-c'
+    - |
+         MODULE_SEQUENCE=("folders/shared-services"
+                        #"folders/management"
+                        "projects/shared-services/shared-vpc"
+                        "network"
+                        #"projects/shared-services/application-project"
+                        #"projects/management/billing-export"
+                        #"projects/management/logsink"
+                        #"projects/management/stack-driver"
+                        #"firewall"
+                        #"cloud-nat"
+                        "bastion-host"
+                        #"storage"
+                        #"logging"
+                        #"billing-export"
+                        #"service-account"
+                        #"ilb"      
+                        #"peering-nw"
+                        #"peering"
+                        #"filestore"
+                         )
+         for ((i=${#MODULE_SEQUENCE[@]-1}; i>=0; i--)); 
+         do
+           gcloud builds submit . --config=cloudbuild-destroy.yaml --substitutions=_MODULE_DIR_PATH="${MODULE_SEQUENCE[i]}",_ORGANIZATION_ID="427157672871",_MASTER_BILLING_ACCOUNT="009581-D891BC-5D3CB6",_BUCKET="virtusa4-project-demo-storage"
+         done
+         timeout: 2000s

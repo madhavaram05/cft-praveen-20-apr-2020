@@ -1,0 +1,46 @@
+provider "google" {
+  version = "~> 3.3.0"
+}
+module "net-firewall" {
+  source              = "terraform-google-modules/network/google//modules/fabric-net-firewall"
+  version             = "~> 2.0.0"
+  project_id          = data.terraform_remote_state.svpc-project-id.outputs.project_id
+  network             = data.terraform_remote_state.vpc_network.outputs.network_name
+  ssh_source_ranges   = ["0.0.0.0/0"]
+  http_source_ranges  = []
+  https_source_ranges = []
+  custom_rules = {
+   ps-vpc-ingress-tag-ssh = {
+      description          = "Allow Ingress ssh tag"
+      direction            = "INGRESS"
+      action               = "allow"
+      ranges               = ["0.0.0.0/0"]      # source or destination ranges (depends on `direction`)
+      use_service_accounts = false                                                                                                                # if `true` targets/sources expect list of instances SA, if false - list of tags
+      targets              = ["ssh"]                                                                                                              # target_service_accounts or target_tags depends on `use_service_accounts` value
+      sources              = null                                                                                                                 # source_service_accounts or source_tags depends on `use_service_accounts` value
+      rules = [{
+        protocol = "tcp"
+        ports    = ["22"]
+        }
+      ]
+      extra_attributes = {}
+    }
+    ps-vpc-allow-internal = {
+      description          = "allow all instances in the network"
+      direction            = "INGRESS"
+      action               = "allow"
+      ranges               = ["10.10.0.0/24"]
+      use_service_accounts = false
+      targets              = []
+      sources              = null
+      rules = [{
+        protocol = "all"
+        ports    = []
+        }
+      ]
+      extra_attributes = {}
+
+    }
+  }
+}
+

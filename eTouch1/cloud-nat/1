@@ -1,0 +1,12 @@
+module "cloud-nat" {
+  source        = "terraform-google-modules/cloud-nat/google"
+  version       = "~> 1.2.0"
+  name          = "etouch-cloud-nat-us-east1"
+  project_id   = "praveen-sahukara"
+  #project_id    = data.terraform_remote_state.svpc-projecr-id.outputs.project_id
+  region        = "us-east1"
+  network       = "shared-vpc" 
+  #network       = data.terraform_remote_state.vpc_network.outputs.network_name
+  create_router = "true"
+  router        = "etouch-router-us-east1"
+}

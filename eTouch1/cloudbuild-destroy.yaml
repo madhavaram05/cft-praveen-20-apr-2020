@@ -1,0 +1,27 @@
+# This build can be used destroy individual terraform module. Provide module directory path e.g. /networking/nonprod in substitute variable _MODULE_DIR_PATH
+# Usage : In this directory, run the following command to build
+# $ gcloud builds submit . --config=cloudbuild-destroy.yaml --substitutions=_MODULE_DIR_PATH="<module-dir-path>"
+steps:
+- name: hashicorp/terraform:0.12.8
+  dir: $_MODULE_DIR_PATH
+  args: ['init','-backend-config=bucket=${_BUCKET}']
+  env:
+    - 'TF_VAR_organization_id=$_ORGANIZATION_ID'
+    - 'TF_VAR_master_billing_account=$_MASTER_BILLING_ACCOUNT'
+- name: hashicorp/terraform:0.12.8
+  dir: $_MODULE_DIR_PATH
+  args: ['plan']
+  env:
+    - 'TF_VAR_organization_id=$_ORGANIZATION_ID'
+    - 'TF_VAR_master_billing_account=$_MASTER_BILLING_ACCOUNT'
+- name: hashicorp/terraform:0.12.8
+  dir: $_MODULE_DIR_PATH
+  args: ['destroy', '-auto-approve']
+  env:
+    - 'TF_VAR_organization_id=$_ORGANIZATION_ID'
+    - 'TF_VAR_master_billing_account=$_MASTER_BILLING_ACCOUNT'
+substitutions:
+  _MODULE_DIR_PATH:
+  _ORGANIZATION_ID:
+  _MASTER_BILLING_ACCOUNT:
+  _BUCKET:
